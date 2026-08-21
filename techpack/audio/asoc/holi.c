@@ -5288,17 +5288,18 @@ static struct snd_soc_dai_link msm_common_misc_fe_dai_links[] = {
 		.ignore_pmdown_time = 1,
 		SND_SOC_DAILINK_REG(slimbus7_hostless),
 	},
-	{/* hw:x,36 */
-		.name = "Compress Capture",
-		.stream_name = "Compress9",
+	{
+		.name = "INT_HFP_BT Hostless",
+		.stream_name = "INT_HFP_BT Hostless",
 		.dynamic = 1,
+		.dpcm_playback = 1,
 		.dpcm_capture = 1,
 		.trigger = {SND_SOC_DPCM_TRIGGER_POST,
 			    SND_SOC_DPCM_TRIGGER_POST},
+		.no_host_mode = SND_SOC_DAI_LINK_NO_HOST,
 		.ignore_suspend = 1,
 		.ignore_pmdown_time = 1,
-		.id = MSM_FRONTEND_DAI_MULTIMEDIA17,
-		SND_SOC_DAILINK_REG(multimedia17),
+		SND_SOC_DAILINK_REG(int_hfp_bt_hostless),
 	},
 	{/* hw:x,37 */
 		.name = "SLIMBUS_8 Hostless",
@@ -5361,6 +5362,18 @@ static struct snd_soc_dai_link msm_common_misc_fe_dai_links[] = {
 		.dpcm_capture = 1,
 		.ignore_suspend = 1,
 		SND_SOC_DAILINK_REG(afepcm_tx1),
+	},
+	{
+		.name = "Compress Capture",
+		.stream_name = "Compress9",
+		.dynamic = 1,
+		.dpcm_capture = 1,
+		.trigger = {SND_SOC_DPCM_TRIGGER_POST,
+			    SND_SOC_DPCM_TRIGGER_POST},
+		.ignore_suspend = 1,
+		.ignore_pmdown_time = 1,
+		.id = MSM_FRONTEND_DAI_MULTIMEDIA17,
+		SND_SOC_DAILINK_REG(multimedia17),
 	},
 };
 
