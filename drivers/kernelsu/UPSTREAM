@@ -1,0 +1,7 @@
+KernelSU Next kernel sources
+Repository: https://github.com/KernelSU-Next/KernelSU-Next
+Tag: v3.2.0-legacy
+Commit: 9b08e88862000d5c50fb2e43a5b75123cf472e54
+
+The upstream kernel/ sources and their sibling uapi/ headers required for built-in integration
+are vendored here.
