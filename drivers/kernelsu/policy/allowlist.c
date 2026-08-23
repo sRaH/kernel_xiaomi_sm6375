@@ -174,7 +174,7 @@ static bool profile_valid(struct app_profile *profile)
 		return false;
 	}
 
-	if (profile->allow_su) {
+	if (profile->allow_su && !profile->rp_config.use_default) {
 #ifndef CONFIG_KSU_DISABLE_POLICY
 		if (profile->rp_config.profile.groups_count > KSU_MAX_GROUPS) {
 			pr_err("invalid groups_count in app_profile: %s\n", profile->key);
@@ -206,6 +206,7 @@ int ksu_set_app_profile(struct app_profile *profile)
     struct perm_data *p = NULL, *np;
     int result = 0;
     u16 count = 0;
+    bool allow_uid = false;
 
     if (!profile_valid(profile)) {
         pr_err("Failed to set app profile: invalid profile!\n");
@@ -275,6 +276,14 @@ int ksu_set_app_profile(struct app_profile *profile)
 out:
     result = 0;
 
+    /* Multiple package names can share a UID. Keep it allowed if any profile allows it. */
+    list_for_each_entry (p, &allow_list, list) {
+        if (p->profile.current_uid == profile->current_uid && p->profile.allow_su) {
+            allow_uid = true;
+            break;
+        }
+    }
+
     // check if the default profiles is changed, cache it to a single struct to accelerate access.
     if (unlikely(!strcmp(profile->key, "$"))) {
 #ifndef CONFIG_KSU_DISABLE_POLICY
@@ -288,14 +297,15 @@ out:
         memcpy(&default_root_profile, &profile->rp_config.profile, sizeof(default_root_profile));
 #endif
     } else if (profile->current_uid <= BITMAP_UID_MAX) {
-        if (profile->allow_su)
+        if (allow_uid)
             allow_list_bitmap[profile->current_uid / BITS_PER_BYTE] |=
                 1 << (profile->current_uid % BITS_PER_BYTE);
         else
             allow_list_bitmap[profile->current_uid / BITS_PER_BYTE] &=
                 ~(1 << (profile->current_uid % BITS_PER_BYTE));
     } else {
-        if (profile->allow_su) {
+        remove_uid_from_arr(profile->current_uid);
+        if (allow_uid) {
             /*
              * 1024 apps with uid higher than BITMAP_UID_MAX
              * registered to request superuser?
@@ -306,8 +316,6 @@ out:
             } else {
                 allow_list_arr[allow_list_pointer++] = profile->current_uid;
             }
-        } else {
-            remove_uid_from_arr(profile->current_uid);
         }
     }
 

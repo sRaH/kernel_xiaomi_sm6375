@@ -101,6 +101,12 @@ struct ksu_set_app_profile_cmd {
     struct app_profile profile; /* Input: app profile structure */
 };
 
+/* Restricted bridge used by Android's system_server for SUPER_PERMISSION. */
+struct ksu_set_super_permission_cmd {
+    __u32 uid;
+    __u8 enabled;
+};
+
 struct ksu_get_feature_cmd {
     __u32 feature_id; /* Input: feature ID (enum ksu_feature_id) */
     __u64 value; /* Output: feature value/state */
@@ -174,6 +180,8 @@ static const __u32 KSU_IOCTL_MANAGE_MARK = _IOC(_IOC_READ | _IOC_WRITE, 'K', 16,
 static const __u32 KSU_IOCTL_NUKE_EXT4_SYSFS = _IOC(_IOC_WRITE, 'K', 17, 0);
 static const __u32 KSU_IOCTL_ADD_TRY_UMOUNT = _IOC(_IOC_WRITE, 'K', 18, 0);
 static const __u32 KSU_IOCTL_SET_INIT_PGRP = _IO('K', 19);
+static const __u32 KSU_IOCTL_SET_SUPER_PERMISSION =
+    _IOC(_IOC_WRITE, 'K', 20, 0);
 static const __u32 KSU_IOCTL_GET_HOOK_MODE = _IOC(_IOC_READ, 'K', 98, 0);
 static const __u32 KSU_IOCTL_GET_VERSION_TAG = _IOC(_IOC_READ, 'K', 99, 0);
 

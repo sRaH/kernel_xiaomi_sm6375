@@ -3,6 +3,7 @@
 #include "supercall/internal.h"
 #include "manager/manager_identity.h"
 #include "policy/allowlist.h"
+#include "selinux/selinux.h"
 
 // Permission check functions
 bool only_manager(void)
@@ -18,6 +19,11 @@ bool only_root(void)
 bool manager_or_root(void)
 {
 	return current_uid().val == 0 || is_manager();
+}
+
+bool only_system(void)
+{
+	return current_uid().val == 1000 && is_system_server(current_cred());
 }
 
 bool always_allow(void)
