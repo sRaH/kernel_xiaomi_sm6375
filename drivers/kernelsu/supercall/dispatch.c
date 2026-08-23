@@ -345,6 +345,36 @@ static int do_set_app_profile(void __user *arg)
     return ret;
 }
 
+static int do_set_super_permission(void __user *arg)
+{
+    struct ksu_set_super_permission_cmd cmd;
+    struct app_profile profile = { 0 };
+    int ret;
+
+    if (copy_from_user(&cmd, arg, sizeof(cmd)))
+        return -EFAULT;
+    if (cmd.uid < 10000)
+        return -EINVAL;
+
+    profile.version = KSU_APP_PROFILE_VER;
+    profile.current_uid = cmd.uid;
+    profile.allow_su = !!cmd.enabled;
+    strscpy(profile.key, "android.super_permission", sizeof(profile.key));
+    if (profile.allow_su)
+        profile.rp_config.use_default = true;
+    else
+        profile.nrp_config.use_default = true;
+
+    ret = ksu_set_app_profile(&profile);
+    if (!ret) {
+        ksu_persistent_allow_list();
+#ifdef KSU_KPROBES_HOOK
+        ksu_mark_running_process();
+#endif
+    }
+    return ret;
+}
+
 static int do_get_feature(void __user *arg)
 {
 	struct ksu_get_feature_cmd cmd;
@@ -824,6 +854,12 @@ static const struct ksu_ioctl_cmd_map ksu_ioctl_handlers[] = {
         .name = "SET_APP_PROFILE",
         .handler = do_set_app_profile,
         .perm_check = only_manager
+    },
+    {
+        .cmd = KSU_IOCTL_SET_SUPER_PERMISSION,
+        .name = "SET_SUPER_PERMISSION",
+        .handler = do_set_super_permission,
+        .perm_check = only_system
     },
     {
         .cmd = KSU_IOCTL_GET_FEATURE,

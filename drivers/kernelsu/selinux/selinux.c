@@ -22,6 +22,7 @@
 static u32 cached_su_sid __read_mostly = 0;
 static u32 cached_zygote_sid __read_mostly = 0;
 static u32 cached_init_sid __read_mostly = 0;
+static u32 cached_system_server_sid __read_mostly = 0;
 u32 ksu_file_sid __read_mostly = 0;
 
 static int transive_to_domain(const char *domain, struct cred *cred)
@@ -180,6 +181,14 @@ void cache_sid(void)
         pr_info("Cached init SID: %u\n", cached_init_sid);
     }
 
+    err = security_secctx_to_secid(SYSTEM_SERVER_CONTEXT,
+                                   strlen(SYSTEM_SERVER_CONTEXT),
+                                   &cached_system_server_sid);
+    if (err) {
+        pr_warn("Failed to cache system_server SID: %d\n", err);
+        cached_system_server_sid = 0;
+    }
+
     err = security_secctx_to_secid(KSU_FILE_CONTEXT, strlen(KSU_FILE_CONTEXT),
                                    &ksu_file_sid);
     if (err) {
@@ -243,4 +252,9 @@ bool is_zygote(const struct cred *cred)
 bool is_init(const struct cred *cred)
 {
     return is_sid_match(cred, cached_init_sid, INIT_CONTEXT);
+}
+
+bool is_system_server(const struct cred *cred)
+{
+    return is_sid_match(cred, cached_system_server_sid, SYSTEM_SERVER_CONTEXT);
 }
